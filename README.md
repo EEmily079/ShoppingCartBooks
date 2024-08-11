@@ -1,430 +1,219 @@
-MVC CRUD Application >>>
-search MVC Templeate Give project Name >> Visual Studio already has Model, View, Controller
+Book Shop Shopping Cart MVC with User Role >>>>>>>>>>>>>>>>>>>>
+
+1. Choose ASP.NET Core Web Appp (Model-View-Controller)
+Choose .Net 7 
+Authentication Type - Individual Accounts
+Configure for HTTPS
+
+2. Inside Area Folder >> already has migration file for User Log in 
+
+3. To connect DB open MSSQL server set with Default Setting (such as Local)
+
+inside appsettings.json >>> 
+
+"ConnectionStrings": {
+    "DefaultConnection": "Server=(local);Database=BookShoppingCartMvc;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"
+  },
 
 
-To able to talk to Data Base>>>> SQL Server (MSSQL)_Entity Framework Core
-go to Dependencies > Right Click > click on Manage NuGet Packages 
- 
-- Search this in the package
-	Microsoft.EntityFrameworkcore.sqlServer
-- Install this sqlServer package (must be 6.0.6) same as .Net version
+4. Inside Area Foler > Identity folder > Right click on it and add New Scaffolded Item
 
-To do Data Migration with SQL need to install 2nd Package 
-- Search 2nd Package 
-	Microsoft.EntityframeworkCore.Tools 
-- Install this package (must be 6.0.6)
+then click on Identity and Overrdie all files (or) use what we only need.. 
+it will ask database context and choose DbContext. 
+
+5. Create Databse 
+
+open nuget packages >>  update-database 
 
 
-- create Employee Model 
-(Model file > add new folder (Domain)) then add class Employee. 
-Add few properties for this Employee.
-Sample code >>>>
-	namespace ASPNETMVCCRUD.Models.Doman
-	{
-    		public class Employee
-   	 {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public double Salary { get; set; }
-        public DateTime DateOfBirth { get; set; }
-        public string Department { get; set; }
-    	}
-	}
+6. Create Table >>>>>>> Models > in this case BookShop we create 
+  [Table("Book")]
+    public class Book
+    {
+        public int Id { get; set; }
+        [Required, MaxLength(40)]
+        public string? BookName { get; set; }
+        [Required]
+        public  double Price { get; set; }
+        public string? Image { get; set; }
+        [Required]
+        public int GenreId { get; set; }
+        public Genre Genre { get; set; }
 
-Create Database >>>>>
-
-To create New Database - Create DBContext Class
-- add File in project then create class called DBContext.cs 
-that will be inherit from base class called DBContext
-	using Microsoft.EntityFrameworkCore; 
-(add this as Library in DBContext.cs)
-- create Constructor (click on class name and press Ctl+.) 
-	generate constructor with (option) 
-
-- create Properties (shoutcut > prop then press 2 times) 
-	change property Dbtype of DbSet<>, then create Employee Model
-
-sample code >>>>
-	using ASPNETMVCCRUD.Models.Doman;
-	using Microsoft.EntityFrameworkCore;
-
-	namespace ASPNETMVCCRUD.Data
-	{
-   	 public class MVCDemoDbContext : DbContext
-    	{
-        public MVCDemoDbContext(DbContextOptions options) : 
-            base(options)
-        {
-        }
-        public DbSet<Employee> Employees { get; set; }
-
-   	 }
-	}
-
-- Use this Employee Model into (Data) Domain Model of MVCDbContext.cs
-	DbSet<Emoloyee> (property must be employee cos we want to use employee model.
-code sample >>>> 	
-	public DbSet<Employee> Employees { get; set; }
-	Call Ctl+. then use using ASPNETMVCCRUD.Models.Domain;
-
-- then need to inject into Program.cs file if not application will not know about DBContext.
-	and what property we want to create. 
-code sample >>>> 
-	// Add services to the container.
-	builder.Services.AddControllersWithViews();
-	builder.Services.AddDbContext<MVCDemoDbContext>(options =>
-    	options.UseSqlServer(builder.Configuration.
-	GetConnectionString("MvcDemoConnectionString")));
+        public List<OrderDetail> OrderDeatils{ get; set; }
+        public List<CartDetail> CartDetails { get; set; }
 
 
-- appsetting.jason (need to add ConnectionString Property)
-	"MvcDemoConnectionString": "server=;database=;Trusted_connection=true"
-sample code >>>
-	"ConnectionStrings": {
-    	"MvcDemoConnectionString": "Server=localhost;Database=MvcDemoDb;Trusted_Connection=True;"
-  	}
-Database name = MvcDemoDb will create inside MSSQL server. 
 
-- to create Database inside MSSQL server.
-Tools > Nuget package manager > Console 
+    }
 
-1.	Add-Migration "name something" 
+ [Table("CartDetail")]
+    public class CartDetail
+    {
+        public int Id { get; set; }
+        [Required]
+        public int ShoppingCartId { get; set; }
+        [Required]
+        public int BookId { get; set; }
+        [Required]
+        public int Quantity { get; set; }
+        public Book Book { get; set; }
+        public ShoppingCart ShoppingCart { get; set; }
+    }
 
-2.	Update-Database
-
-
--Create frew pages to do CRUD. 
-	Add new Controller (MVC Empty Controller) 
-	Create Add Mehtod (that is HttpGet)
-sample code >> 
-	using Microsoft.AspNetCore.Mvc;
-	namespace ASPNETMVCCRUD.Controllers
-	{
-   	 public class EmployeesController : Controller
-    	{
-       		 [HttpGet]
-       		 public IActionResult Add()
-        {
-            return View();
-       	 }
-    	}
-  }
-
--Add View for AddEmployee > can click return action view to create cshtml
-- to navigate this view page add this nav list into layout.cshtml 
-Add new employee will be under Employees (Controller) action will be (Add) 
-then nav bar name is Add Employee 
-sample code >>> 
- <li class="nav-item">
-  <a class="nav-link text-dark" asp-area="" asp-controller="Employees" asp-action="Add">Add Employee</a>
- </li>
-
-
-- Create AddEmployeeViewModel.cs (to tigger form action) that will be same property as Employee model.
-but no Id ( when user add new employee DB will auto define ID) 
-
--Inside Views > Create Employees Folder > then create Add.cshtml
-
--to create Add new employee form use Bootstrap. 
-	https://getbootstrap.com/docs/4.1/components/forms/
-inside the form structure add method ="post" action="Add" (this add will trigger Models)
-when user key in input box, we need to tigger and tie to Employee moedel. 
-so need to define asp-for="property"
-sample code >> 
-	
-@model ASPNETMVCCRUD.Models.AddEmployeeViewModel
-
-@{
-
+    [Table("Genre")]
+    public class Genre
+    {
+        public int Id { get; set; }
+        [Required]
+        [MaxLength(40)]
+        public string GenreName { get; set; }
+        public List<Book>Books;
+    }
 }
 
-<form method="post" action="Add">
-    <div class="mb-3">
-        <label for="" class=" = " form-label">Name</label>
-        <input type="text" class="form-control" asp-for="Name">
-    </div>
+   [Table("Order")]
+    public class Order
+    {
+        public int Id { get; set; }
+        [Required]
+        public  Guid UserId { get; set; }
+        public DateTime CreateDate { get; set; } = DateTime.UtcNow;
+        [Required]
+        public int OrderStatus { get; set; }
+        public bool IsDeleted { get; set; } = false;
+        public OrderStatus orderStatusId{ get; set; }
+        public List<OrderDetail> OrderDetails{ get; set; }
 
-    <div class="mb-3">
-        <label for="" class=" = " form-label">Email Address</label>
-        <input type="email" class="form-control" asp-for="Email">
-    </div>
+    }
 
-    <div class="mb-3">
-        <label for="" class=" = " form-label">Salary</label>
-        <input type="number" class="form-control" asp-for="Salary">
-    </div>
-
-    <div class="mb-3">
-        <label for="" class=" = " form-label">Date of Birth</label>
-        <input type="date" class="form-control" asp-for="DateOfBirth">
-    </div>
-
-    <div class="mb-3">
-        <label for="" class=" = " form-label">Department</label>
-        <input type="text" class="form-control" asp-for="Department">
-    </div>
-
-    <button type="submit" class="btn btn-primary">Submit</button>
-</form>
-
-
+    [Table("OrderDetail")]
+    public class OrderDetail
+    {
+        public int Id { get; set; }
+        [Required]
+        public  int OrderId  { get; set; }
+        [Required]
+        public  int BookId  { get; set; }
+        [Required]
+        public int Quantity { get; set; }
+        public double UniquePrice { get; set; }
+        public Order Order { get; set; }
+        public  Book Book { get; set; }
 
 
--  Create Post Method in EmployeesController (Add action)
-	Add method require one parameter of Model (AddEmployeeViewModel ddEmployeeRequest)
-	create new employee based on what user input
-	ID will auto generate ( Guid.NewGuid())
-	the rest will be addEmployeeRequest.Name .........
-Sample Code >>>
-	[HttpPost]
-        public async Task<IActionResult> Add(AddEmpiloyeeViewModel addEmployeeRequest)
+    }
+
+    [Table("OrderStatus")]
+    public class OrderStatus
+    {
+        public int Id { get; set; }
+        [Required]
+        public int StatusId { get; set; }
+      
+        [Required, MaxLength(20)]
+        public string? StatusName { get; set; }
+    }
+
+    [Table("ShoppingCart")]
+    public class ShoppingCart 
+    {
+        public int Id { get; set; }
+
+        [Required]
+        public int CartId { get; set; }
+        [Required]
+        public int UserId { get; set;}
+
+        public bool IsDeleted { get; set; } = false;
+
+    }
+
+7. Then Update Database with those tables >> 
+Migrations > ApplicationDbContext.cs >> inside this class 
+add all those Models 
+
+  public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
         {
-            var employee = new Employee()
-            {
-                Id = Guid.NewGuid(),
-                Name = addEmployeeRequest.Name,
-                Email = addEmployeeRequest.Email,
-                Salary = addEmployeeRequest.Salary,
-                Department = addEmployeeRequest.Department,
-                DateOfBirth = addEmployeeRequest.DateOfBirth
-            };
-
-- Need to inject DbContext , which is injected in sercvices (program.cs)
-	inside EmployeeController on top of Add action. create constructor 
-	short key = ctor
-	then call MVCDemoDbContext > give name of that model 
-	then create and assign field..(this readonly will talk to database.)
-Sample code >>>
-	private readonly MVCDemoDbContext mvcDemoDbContext;
-
-        public EmployeesController(MVCDemoDbContext mvcDemoDbContext)
-        {
-            this.mvcDemoDbContext = mvcDemoDbContext;
         }
-	
+        public DbSet<Book> Books { get; set; }
+        public DbSet<CartDetail> CartDetails { get; set; }
+        public DbSet<Genre> Genres { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderDetail> OrderDetails { get; set; }
 
--In add action (post method) 
-	call above readonly property.Employees.Add(employee);
-	readonly property.SaveChanges(); > that will save into Database. 
+        public DbSet<OrderStatus> OrderStatuses{ get; set; }
+        public DbSet<ShoppingCart> ShoppingCarts { get; set; }
 
+8. Update Database >> inside Nuget Package Consle 
+add-migration (give name for this migration) >> after migration done 
+update-database 
 
-- Asyncoronous Method
-	add async in Add action then IActionResult is Task > 
-		then add Asyncinside action ,
-		 Await in front of action to update database. 
-Sample code >>> 
+USER ROLE CREATION >>>>>>>>>>>>>>>>>>>>>
 
-	 public async Task<IActionResult> Add(AddEmployeeViewModel addEmployeeRequest)
-        {
-            var employee = new Employee()
-            {
-                Id = Guid.NewGuid(),
-                Name = addEmployeeRequest.Name,
-                Email = addEmployeeRequest.Email,
-                Salary = addEmployeeRequest.Salary,
-                Department = addEmployeeRequest.Department,
-                DateOfBirth = addEmployeeRequest.DateOfBirth
-            };
+10. Create folder called Constant > inside that add Roles.cs and update as follow 
+	   public enum Roles
+    {
+        User=1,
+        Admin
+    }
 
-                await mvcDemoDbContext.Employees.AddAsync(employee);
-                await mvcDemoDbContext.SaveChangesAsync();
-             return RedirectToAction("Add");
-        }
-
-
-- Showing the List of Employee 
-	In EmployeeController create Index Method (HttpGet)
-	That will be async await method.. 
-sample code >>>> 
-
-	 [HttpGet]
-        public async Task<IActionResult> Index()
-        {
-            var employees = await mvcDemoDbContext.Employees.ToListAsync();
-            return View(employees);
-        }
-
-
--create Index page to Show Employee List (Table)
-sample code >>>
-
-	@model List<ASPNETMVCCRUD.Models.Domain.Employee>
-@{
-}
-
-<h1>Employee List</h1>
-<table class = "table">
-    <thead>
-        <tr>
-            <th>Id</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Salary</th>
-            <th>Date of Birth</th>
-            <th>Deaprtment</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach(var employee in Model)
-        {
-            <tr>
-                <td>@employee.Id</td>
-                <td>@employee.Name</td>
-                <td>@employee.Email</td>
-                <td>@employee.Salary</td>
-                <td>@employee.DateOfBirth.ToString("dd-MMM-yyyy")</td>
-                <td>@employee.Department</td>
-            </tr>
-        }
-    </tbody>
-</table> 
-
-- give directory route in Layout > 
-	 <li class="nav-item">
-              <a class="nav-link text-dark" asp-area="" asp-controller="Employees" asp-action="Index">Employees List</a>
-          </li>
-
-- Since already create view index for list of employee, change direction of 
-Add Employee function > return RedirectToAction("Index");
-
-
-
-- View/Update Employee Deatil
-	inside table of employees (Index.html). add in empty head <td>
-	then add <td><a href="Employees/View/@employee.Id">View</a></td>
-that will show herf path of employees/view with respective employeeID
-
--trigger this action (View/Update)
-	inside EmployeeController create function View to show Employee.
-	to show this need to create another Model (UpdateEmployeeViewModel)
-sample code >>>> that is exactly same as Employee Model 
-	
-	namespace ASPNETMVCCRUD.Models
-	{
-    	public class UpdateEmployeeViewModel
-   	 {
-        	public Guid Id { get; set; }
-        	public string Name { get; set; }
-        	public string Email { get; set; }
-        	public double Salary { get; set; }
-        	public DateTime DateOfBirth { get; set; }
-        	public string Department { get; set; }
-    	}
-	}
-- inside View Action (HttpGet) with await , async
-samplecode >>> 
-	
-	[HttpGet]
-        public async Task <IActionResult> View(Guid id)
-        {
-            var employee = await mvcDemoDbContext.Employees.FirstOrDefaultAsync(x => x.Id == id);
-            if (employee != null)
-            {
-                var viewModel = new UpdateEmployeeViewModel()
+11. Areas > Identity > Pages > Account > Manage > 
+	Register.cshtml > Register.cshtml.cs (open this class) 
+Find Post Method >>> OnPostAsync ( like when user successfully created we will add some roles to it) 
+	CreateUser(); after success >>>>> 
+	if (result.Succeeded)
                 {
-                    Id = employee.Id,
-                    Name = employee.Name,
-                    Email = employee.Email,
-                    Salary = employee.Salary,
-                    Department = employee.Department,
-                    DateOfBirth = employee.DateOfBirth
+                    //assigning roles to user
+                    await _userManager.AddToRoleAsync(user,Roles.User.ToString());
 
-                };
-                return await Task.Run(()=> View("View", viewModel));
-            }
-                 return RedirectToAction("Index"); 
-        }
-	
-- to show this View/Update Employee Create another Page View.cshtml
-	This view html is using UpdateEmployeeViewModel in order to let update it. 
-sample code >>> (ID not able to change)
+12. In the package Roles data are Empty > so before we run it we need to create Admin role in backend app our own 
 
-		@model ASPNETMVCCRUD.Models.UpdateEmployeeViewModel
-	@{
-	}
-
-		<h1>View Employee</h1>
-		<form method="post" action="Add" class="mb-5">
-    		<div class="mb-3">
-        		<label for="" class=" = " form-label">ID</label>
-       		 <input type="text" class="form-control" asp-for="Id" readonly>
-    		</div>
-    		<div class="mb-3">
-        		<label for="" class=" = " form-label">Name</label>
-        		<input type="text" class="form-control" asp-for="Name">
-    		</div>
-    		<div class="mb-3">
-        		<label for="" class=" = " form-label">Email Address</label>
-        		<input type="email" class="form-control" asp-for="Email">
-    		</div>
-    		<div class="mb-3">
-        		<label for="" class=" = " form-label">Salary</label>
-        		<input type="number" class="form-control" asp-for="Salary">
-    		</div>
-    		<div class="mb-3">
-        		<label for="" class=" = " form-label">Date of Birth</label>
-        		<input type="date" class="form-control" asp-for="DateOfBirth">
-    		</div>
-    		<div class="mb-3">
-        		<label for="" class=" = " form-label">Department</label>
-        		<input type="text" class="form-control" asp-for="Department">
-    		</div>
-    		<button type="submit" class="btn btn-primary">Update</button>
-		</form>
-
-- To trigger Update Function create [HttpPost] Method for View Action 
-	always need savechanges
-sample code >>> 
-		[HttpPost]
-        public async Task<IActionResult> View(UpdateEmployeeViewModel model)
+	Data > add DbSeeder.cs >>>
+		public class DbSeeder
+    {
+        public static async Task SeedDefaultData(IServiceProvider service)
         {
-            var employee = await mvcDemoDbContext.Employees.FindAsync(model.Id);
-            if (employee != null)
+            var userMgr = service.GetService<UserManager<IdentityUser>>();
+            var roleMgr = service.GetService<RoleManager<IdentityRole>>();
+
+            //Adding some roles to DB
+            await roleMgr.CreateAsync(new IdentityRole(Roles.Admin.ToString()));
+            await roleMgr.CreateAsync(new IdentityRole(Roles.User.ToString()));
+
+            //Create Admin user
+            var admin = new IdentityUser
             {
-                employee.Name = model.Name;
-                employee.Email = model.Email;
-                employee.Salary = model.Salary;
-                employee.Department = model.Department;
-                employee.DateOfBirth = model.DateOfBirth;
+                UserName = "admin@gmail.com",
+                Email = "admin@gmail.com",
+                EmailConfirmed = true
+            };
 
-                await mvcDemoDbContext.SaveChangesAsync();
-                return RedirectToAction("Index");
+            var userInDb = await userMgr.FindByEmailAsync(admin.Email);
+            if(userInDb is null) {
+                await userMgr.CreateAsync(admin, "Admin@123");
+                await userMgr.AddToRoleAsync(admin,Roles.Admin.ToString());
             }
-
-            return RedirectToAction("Index");
         }
     }
 
-- Delete Function >>> create one more button inside View html page 
-	btn is danger and need to add asp-action , asp-controller
-	 <button type="submit" class="btn btn-danger"
-        asp-action="Delete" 
-        asp-controller="Employees">Delete</button>
+13. Inside Program.cs >>>> change this funciton > builder.service.AddDefaultIdentity 
 	
--for asp-action = "delete" > create [httpPost] Delete Action inside Employees COntroller
-sample code >>>>
+    builder.Services.AddIdentity<IdentityUser,IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+    	.AddEntityFrameworkStores<ApplicationDbContext>()
+   	.AddDefaultUI()
+    	.AddDefaultTokenProviders();
+
+14. change abit inside Login Layout to know Admin account
+	Shared > LoginPartial.cshtml
 	
-	[HttpPost]
-        public async Task<IActionResult> Delete(UpdateEmployeeViewModel model)
-        {
-            var employee = await mvcDemoDbContext.Employees.FindAsync(model.Id);
-            if (employee != null)
-            {
-                mvcDemoDbContext.Employees.Remove(employee);
-                await mvcDemoDbContext.SaveChangesAsync();
-                return RedirectToAction("Index");
-            }
-            
-            return RedirectToAction("Index");
-        }
-
-	
-			
-
-
-
-
-
-
+	 <li class="nav-item">
+        <a  class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!
+                @if (User.IsInRole("Admin"))
+                {
+                    <span>(Admin)</span>
+                }
+            </a>
+    </li>
 	
